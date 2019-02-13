@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    app:cardBackgroundColor="@color/colorPrimary"
+    app:cardCornerRadius="4dp"
+    android:id="@+id/card_layout">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp">
+
+        <ImageView
+            android:id="@+id/newsImage"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:padding="2dp"
+            tools:srcCompat="@drawable/ic_launcher_background" />
+
+        <TextView
+            android:id="@+id/newsHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="4dp"
+            android:layout_toEndOf="@+id/newsImage"
+            android:text="Tidligere olje-topp raser mot nettselskapene: - Burde ikke få ta utbytte"
+            android:textColor="@color/ColorOffWhite"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/newsDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/newsHeader"
+            android:layout_toEndOf="@+id/newsImage"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="2dp"
+            android:text="09.02.2019 16:42"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="10sp"
+            android:textStyle="italic"/>
+
+        <TextView
+            android:id="@+id/newsSummary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/newsDate"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="2dp"
+            android:layout_toEndOf="@+id/newsImage"
+            android:text="Strømprisene i Norge har i løpet av 2018 og starten av 2019 nådd et historisk høyt nivå. Nettselskapene må ta deler av skylden, skal man tro Svein Roar Brunborg."
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp" />
+
+    </RelativeLayout>
+</android.support.v7.widget.CardView>
