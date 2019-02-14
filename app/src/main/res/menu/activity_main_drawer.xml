@@ -12,6 +12,7 @@
             android:icon="@drawable/ic_rss_feed"
             android:title="RSS feeds" />
 
+
         <item android:id="@+id/settings"
             android:icon="@drawable/ic_settings"
             android:title="Settings" />

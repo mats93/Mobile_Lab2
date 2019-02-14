@@ -3,6 +3,7 @@ package com.example.mobile_lab2;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -12,6 +13,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -22,55 +24,89 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private RecyclerView mRecyclerView;                                                         //
-    private RecyclerView.Adapter mAdapter;                                                      //
-    private RecyclerView.LayoutManager mLayoutManager;                                          //
-
-    private SearchView mSearchView;
-
+    private RecyclerView mRecyclerView;                                                         // The RecycleView.
+    private RecyclerView.Adapter mAdapter;                                                      // Adapter to the RecycleView.
+    private RecyclerView.LayoutManager mLayoutManager;                                          // Layout manager for RecycleView.
+    private SearchView mSearchView;                                                             // Search bar.
     private ArrayList<News> newsData = new ArrayList<>();                                       // News data to be put into the RecycleView cards.
-    private String tempDate;                                                                    // Date from xml, is inserted into "News" obj.
-    private String tempHeader;                                                                  // Title from xml, is inserted into "News" obj.
-    private String tempSummary;                                                                 // Description from xml, is inserted into "News" obj.
-    private String tempImage;                                                                   // Image from xml, is inserted into "News" obj.
-    private String tempLink;                                                                    // URL link from xml, is inserted into "News" obj.
+    private String mTempDate;                                                                   // Date from xml, is inserted into "News" obj.
+    private String mTempHeader;                                                                 // Title from xml, is inserted into "News" obj.
+    private String mTempSummary;                                                                // Description from xml, is inserted into "News" obj.
+    private String mTempImage;                                                                  // Image from xml, is inserted into "News" obj.
+    private String mTempLink;                                                                   // URL link from xml, is inserted into "News" obj.
 
+    // Database stuff....
+    private DatabaseWrapper mDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Menu stuff....
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        setTitle("News reader");
+        setContentView(R.layout.activity_main);                                                 // Sets the content to be from 'activity_main'.
+        Toolbar toolbar =  findViewById(R.id.toolbar);                                          // Gets the toolbar.
+        setSupportActionBar(toolbar);                                                           // Enables the toolbar.
+        setTitle("News reader");                                                                // Sets the title of the toolbar.
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        DrawerLayout drawer =  findViewById(R.id.drawer_layout);                                // Gets the drawer.
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(                               // For opening and closing the drawer.
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);                                                       // Listener for the drawer.
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        NavigationView navigationView = findViewById(R.id.nav_view);                            // Gets the navigation bar.
+        navigationView.setNavigationItemSelectedListener(this);                                 // Listener on nav bar.
 
 
-        // Recycle view stuff...
         mRecyclerView = findViewById(R.id.contentView);                                         // Gets the RecyclerView.
         mRecyclerView.setHasFixedSize(true);                                                    // Optimizing.
 
-        mLayoutManager = new LinearLayoutManager(this);                                  //
+        mLayoutManager = new LinearLayoutManager(this);                                  // Connects the RecycleView.
         mRecyclerView.setLayoutManager(mLayoutManager);
 
+        // ToDo: Implement database.
+        mDB = new DatabaseWrapper(this, "news");
+
+        
+        //mDB.DropTable();
+        //mDB.InsertToDB(new News("date", "Hello from DB",
+        //       "This is a summary", "vg.no", "https://gfx.nrk.no/FPWgzpkxcBY29jwH7TIlgAJpWCcsl8C8Rd62b-jRZOsA"));
+
+        //newsData.add(temp);
+
+        //mAdapter = new ContentAdapter(newsData);
+        //mRecyclerView.setAdapter(mAdapter);
+
+        // DB testing....
+        News[] temp = mDB.getNewsNewerThenDate(10);
+        ArrayList<News> tempArrayList = new ArrayList<>(Arrays.asList(temp));
+        mAdapter = new ContentAdapter(tempArrayList);
+        mRecyclerView.setAdapter(mAdapter);
+
+        /* ToDo - Diverse ting:
+        [ ] - Hent data fra db. Hent fra service og bare legg til de hvor <date> > enn siste <date>.
+        [ ] - Finn en måte å sammenligen dates på.
+        [ ] - Finn en måte å kjøre servicen på i background.
+        [ ] - Slett saker som er eldre enn 3 dager.
+        [ ] - Legg til en måte å slette News fra databasen, kan 'un slettes' fra nav view.
+        [ ] - Få SearchView til å fungere, må da legge til en ny RecycleView med de aktuelle sakene.
+        [ ] - Lag en metode for å legge til flere RSS feeds, og hvilke som skal vises (typ switch).
+        [ ] - Legg til Settings hvor det bestemmes hvor ofte RSS feeds skal sjekkes (Ha et valg mellom 3 tidspunkter).
+        [ ] - Legg til Help
+        [ ] - Bytt navn på appen og bilde.
+        [ ] - Endre farge på Nav view bildet.
+         */
+
+
         new ProcessInBackground().execute();
+
     }
 
     @Override
-    public void onBackPressed() {                           // Handles back press on nav bar.
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+    public void onBackPressed() {                                                               // Handles back press on nav bar:
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -79,20 +115,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {         // Handles toolbar options (Search).
+    public boolean onCreateOptionsMenu(Menu menu) {                                             // Handles toolbar options (Search):
         getMenuInflater().inflate(R.menu.main, menu);
 
-        MenuItem myActionMenuItem = menu.findItem( R.id.action_search);
+        MenuItem myActionMenuItem = menu.findItem( R.id.action_search);                         // Gets the search from the menu.
         mSearchView = (SearchView) myActionMenuItem.getActionView();
-        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {               // Listener for text changes.
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                // Toast like print
-                Toast.makeText(getBaseContext(), query, Toast.LENGTH_LONG).show();
-                if( ! mSearchView.isIconified()) {
+            public boolean onQueryTextSubmit(String query) {                                    // When query is submitted:
+                Toast.makeText(getBaseContext(), query, Toast.LENGTH_LONG).show();              // TEMP: toast.
+
+                if( ! mSearchView.isIconified()) {                                              // Removes focus from search.
                     mSearchView.setIconified(true);
                 }
-                myActionMenuItem.collapseActionView();
+                myActionMenuItem.collapseActionView();                                          // Clears the search text.
                 return false;
             }
             @Override
@@ -103,13 +139,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {    // Handles nav bar.
-        // Handle navigation view item clicks here.
+    public boolean onNavigationItemSelected(MenuItem item) {                                    // Handles navigation bar item clicks:
         int id = item.getItemId();
 
-        if (id == R.id.home) {
+        if (id == R.id.home) {                                                                  // Returns to main screen when 'Home' is clicked.
             return true;
         } else if (id == R.id.feeds) {
             Toast.makeText(this, "RSS feeds", Toast.LENGTH_SHORT).show();
@@ -122,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return true;
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -137,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         protected void onPreExecute() {                                                         // Sets progress dialog before execution.
             super.onPreExecute();
 
-            progressDialog.setMessage("Busy loading rss feed...");
+            progressDialog.setMessage("Busy loading news feed...");
             progressDialog.show();
         }
 
@@ -146,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         protected Exception doInBackground(Integer... params) {                                 // XML parser in background.
             try {
-                URL url = new URL("https://www.nrk.no/toppsaker.rss");                     // The RSS v.2 url to parse.
+                URL url = new URL("https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21");                     // The RSS v.2 url to parse.
                 // https://www.nrk.no/toppsaker.rss
                 // https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21
 
@@ -165,30 +199,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                         } else if(xpp.getName().equalsIgnoreCase("title")) {         // Gets the title/header form xml.
                             if (insideItem) {
-                                tempHeader = xpp.nextText();
+                                mTempHeader = xpp.nextText();
                             }
                         } else if(xpp.getName().equalsIgnoreCase("description")) {   // Gets the description/summary form xml.
                             if (insideItem) {
-                                tempSummary = xpp.nextText();
+                                mTempSummary = xpp.nextText();
                             }
                         } else if (xpp.getName().equalsIgnoreCase("enclosure")) {    // Gets the image url from xml.
                             if (insideItem) {
-                                tempImage = xpp.getAttributeValue(null, "url");
+                                mTempImage = xpp.getAttributeValue(null, "url");
                             }
                         } else if (xpp.getName().equalsIgnoreCase("link")) {         // Gets the link to the news article from xml.
                             if (insideItem) {
-                                tempLink = xpp.nextText();
+                                mTempLink = xpp.nextText();
                             }
                         } else if(xpp.getName().equalsIgnoreCase("pubDate")) {       // Gets the published date from the xml.
                             if (insideItem) {
-                                tempDate = xpp.nextText();
+                                mTempDate = xpp.nextText();
 
-                                // ToDo: Insert into database.
-                                newsData.add(new News(tempDate,                                 // Adds the the News object to the ArrayList.
-                                        tempHeader, tempSummary, tempLink, tempImage));
+                                // ToDo: Insert into database. NewsDate should be mTempDate...
+                                mDB.InsertToDB(new News("a",
+                                        mTempHeader, mTempSummary, mTempLink, mTempImage));
 
-                                tempImage = "";                                                 // RSS 2 does not have to include an image or date.
-                                tempDate = "";                                                  // Removes old entries in case of empty tags for next item.
+                                newsData.add(new News(mTempDate,                                // Adds the the News object to the ArrayList.
+                                        mTempHeader, mTempSummary, mTempLink, mTempImage));
+
+                                mTempImage = "";                                                // RSS 2 does not have to include an image or date.
+                                mTempDate = "";                                                 // Removes old entries in case of empty tags for next item.
                             }
                         }
                     } else if (eventType == XmlPullParser.END_TAG &&                            // If parser has reached the end of the document
@@ -210,8 +247,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         protected void onPostExecute(Exception s) {                                             // After execution of background task:
             super.onPostExecute(s);
-            mAdapter = new ContentAdapter(newsData);                                            // Creates a new adapter to RecycleView with the new data.
+           // mAdapter = new ContentAdapter(newsData);                                            // Creates a new adapter to RecycleView with the new data.
             mRecyclerView.setAdapter(mAdapter);                                                 // Connects to the adapter to display new data.
+
+            // DB testing....
+            News[] temp = mDB.getNewsNewerThenDate(10);
+
+            ArrayList<News> tempArrayList = new ArrayList<>(Arrays.asList(temp));
+
+            mAdapter = new ContentAdapter(tempArrayList);
+            mRecyclerView.setAdapter(mAdapter);
 
             progressDialog.dismiss();
         }
