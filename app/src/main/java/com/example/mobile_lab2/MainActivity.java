@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private RecyclerView.Adapter mAdapter;                                                      // Adapter to the RecycleView.
     private RecyclerView.LayoutManager mLayoutManager;                                          // Layout manager for RecycleView.
     private SearchView mSearchView;                                                             // Search bar.
-    private ArrayList<News> newsData = new ArrayList<>();                                       // News data to be put into the RecycleView cards.
+
     private String mTempDate;                                                                   // Date from xml, is inserted into "News" obj.
     private String mTempHeader;                                                                 // Title from xml, is inserted into "News" obj.
     private String mTempSummary;                                                                // Description from xml, is inserted into "News" obj.
@@ -68,9 +68,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // ToDo: Implement database.
         mDB = new DatabaseWrapper(this, "news");
+        mDB.DropTable();
 
-        
-        //mDB.DropTable();
         //mDB.InsertToDB(new News("date", "Hello from DB",
         //       "This is a summary", "vg.no", "https://gfx.nrk.no/FPWgzpkxcBY29jwH7TIlgAJpWCcsl8C8Rd62b-jRZOsA"));
 
@@ -80,25 +79,45 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //mRecyclerView.setAdapter(mAdapter);
 
         // DB testing....
-        News[] temp = mDB.getNewsNewerThenDate(10);
+        News[] temp = mDB.getAllNewsFromDB();
         ArrayList<News> tempArrayList = new ArrayList<>(Arrays.asList(temp));
         mAdapter = new ContentAdapter(tempArrayList);
         mRecyclerView.setAdapter(mAdapter);
 
-        /* ToDo - Diverse ting:
-        [ ] - Hent data fra db. Hent fra service og bare legg til de hvor <date> > enn siste <date>.
-        [ ] - Finn en måte å sammenligen dates på.
-        [ ] - Finn en måte å kjøre servicen på i background.
-        [ ] - Slett saker som er eldre enn 3 dager.
-        [ ] - Legg til en måte å slette News fra databasen, kan 'un slettes' fra nav view.
-        [ ] - Få SearchView til å fungere, må da legge til en ny RecycleView med de aktuelle sakene.
-        [ ] - Lag en metode for å legge til flere RSS feeds, og hvilke som skal vises (typ switch).
-        [ ] - Legg til Settings hvor det bestemmes hvor ofte RSS feeds skal sjekkes (Ha et valg mellom 3 tidspunkter).
-        [ ] - Legg til Help
-        [ ] - Bytt navn på appen og bilde.
-        [ ] - Endre farge på Nav view bildet.
+
+        /* ToDo - RSS feed lagring og visning:
+        [X] - Hent inn alle saker fra databasen.
+        [ ] - Kjør fetch for hver feed.
+        [ ] - Hvis fetch nyhet sin dato >= siste element i databasen -> legg den til (Gjør dette for hver nye sak)
+        [ ] - Slett alle database elementer hvor dato < siste fetchede nyhets dato.
+        [ ] - Display nye saker
+        [ ] - Endre farge på de nyhetene som er klikket på.
+        [ ] - Long click -> slett nyheten fra DB og view.
+        */
+
+        /* ToDo - RSS feed adding og sletting:
+        [ ] - Bruk API "https://cloud.feedly.com/v3/search/feeds/?query=nrk.no" for å søke etter feeds. Kan kjøre som Async.
+        [ ] - Valider linken -> Sjekk om det er RSS v2 og om den har content.
+        [ ] - Display disse i en liste med Website - Title (hvor website er parset til bare domene)
+        [ ] - Bruk switch toggle eller radio buttons til å velge hvilke saker som skal vises.
+        [ ] - Hvis en toggle blir skrudd av -> vent til å slette denne fra oversikten og databasen til man går ut av view.
+        [ ] - Disse skal vises i NAV view, hvor du kan trykke på en og bare nyheter fra denne vises.
+        [ ] - Trykker man på ALL vises alle (fjern home og bytt til All).
+        */
+
+        /* ToDo - Database:
+        [ ] - Legg til et felt for å diferensiere mellom RSS feeds, må være unique (lagre RSS linken).
+        [ ] - Få date til å fungere ved sammenligninger.
+        */
+
+        /* ToDo - Service:
+        [ ] - Putt RSS parsing i en background service
+        [ ] - La denne kjære automatisk ved et interval gitt i settings.
          */
 
+        /* ToDo - Søk:
+        [ ] - Få søk til å søke etter "noe" i header og summary -> åpne egen Activity for disse.
+        */
 
         new ProcessInBackground().execute();
 
@@ -218,10 +237,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 mTempDate = xpp.nextText();
 
                                 // ToDo: Insert into database. NewsDate should be mTempDate...
-                                mDB.InsertToDB(new News("a",
-                                        mTempHeader, mTempSummary, mTempLink, mTempImage));
-
-                                newsData.add(new News(mTempDate,                                // Adds the the News object to the ArrayList.
+                                mDB.InsertToDB(new News(mTempDate,
                                         mTempHeader, mTempSummary, mTempLink, mTempImage));
 
                                 mTempImage = "";                                                // RSS 2 does not have to include an image or date.
@@ -251,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mRecyclerView.setAdapter(mAdapter);                                                 // Connects to the adapter to display new data.
 
             // DB testing....
-            News[] temp = mDB.getNewsNewerThenDate(10);
+            News[] temp = mDB.getAllNewsFromDB();
 
             ArrayList<News> tempArrayList = new ArrayList<>(Arrays.asList(temp));
 

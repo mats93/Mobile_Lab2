@@ -14,11 +14,10 @@ public interface NewsDao {
     @Update
     public void update(News... news);                       // Not used?
 
-    @Query("SELECT * FROM news WHERE mID = :id")            // Not used?
-    public News getNews(Integer id);
+    @Query("SELECT * FROM news")                            // Get all News from the database.
+    public News[] getAllNews();
 
-    @Query("SELECT image FROM news WHERE mID = :id")        // Get image reference in Internal Storage for 'id'.
-    public String getImage(Integer id);
+
 
     @Query("SELECT * FROM news WHERE epochDate < :date")    // Get all 'News' newer then <epoch-date>.
     public News[] newsNewerThenDate(long date);

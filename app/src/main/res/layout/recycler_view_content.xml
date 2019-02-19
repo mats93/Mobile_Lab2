@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="4dp"
-    app:cardBackgroundColor="@color/colorPrimary"
+    app:cardBackgroundColor="@color/ColorPrimaryLight"
     app:cardCornerRadius="4dp"
     android:id="@+id/card_layout">
 
@@ -30,7 +30,7 @@
             android:layout_marginStart="4dp"
             android:layout_toEndOf="@+id/newsImage"
             android:text="Tidligere olje-topp raser mot nettselskapene: - Burde ikke få ta utbytte"
-            android:textColor="@color/ColorOffWhite"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -56,7 +56,7 @@
             android:layout_marginTop="2dp"
             android:layout_toEndOf="@+id/newsImage"
             android:text="Strømprisene i Norge har i løpet av 2018 og starten av 2019 nådd et historisk høyt nivå. Nettselskapene må ta deler av skylden, skal man tro Svein Roar Brunborg."
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/ColorOffWhite"
             android:textSize="12sp" />
 
     </RelativeLayout>

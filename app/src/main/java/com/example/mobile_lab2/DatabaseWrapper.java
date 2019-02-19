@@ -46,20 +46,19 @@ public class DatabaseWrapper {
         }.execute(news);
     }
 
-    public News getNews(int id) {
-        News temp = null;
+    public News[] getAllNewsFromDB() {
+        News[] temp = null;
         try {
-            temp = new AsyncTask<Integer, Void, News>() {
+            temp = new AsyncTask<Void, Void, News[]>() {
                 @Override
-                protected News doInBackground(Integer... ids) {
-                    return mDB.daoAccess().getNews(ids[0]);
+                protected News[] doInBackground(Void... voids) {
+                    return mDB.daoAccess().getAllNews();
                 }
-            }.execute(id).get();
+            }.execute().get();
         } catch (ExecutionException e) {
-            Log.e("Execution exception", e.getMessage());
-        }
-        catch (InterruptedException e) {
-            Log.e("Interrupted exception", e.getMessage());
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         return temp;
     }
