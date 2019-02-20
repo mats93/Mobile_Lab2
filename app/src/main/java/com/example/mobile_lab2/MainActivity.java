@@ -1,6 +1,7 @@
 package com.example.mobile_lab2;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -84,6 +85,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mAdapter = new ContentAdapter(tempArrayList);
         mRecyclerView.setAdapter(mAdapter);
 
+        // TEMP: Service.
+        Intent intent = new Intent(MainActivity.this, RSSPullService.class);
+        startService(intent);
+
 
         /* ToDo - RSS feed lagring og visning:
         [X] - Hent inn alle saker fra databasen.
@@ -97,30 +102,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         /* ToDo - RSS feed adding og sletting:
         [ ] - Bruk API "https://cloud.feedly.com/v3/search/feeds/?query=nrk.no" for å søke etter feeds. Kan kjøre som Async.
-        [ ] - Valider linken -> Sjekk om det er RSS v2 og om den har content.
+        [ ] - Valider linken -> Sjekk om det er RSS v2 og om den har content. Eller bruk forskjellige funksjoner for hver (ATOM, RSS).
         [ ] - Display disse i en liste med Website - Title (hvor website er parset til bare domene)
         [ ] - Bruk switch toggle eller radio buttons til å velge hvilke saker som skal vises.
         [ ] - Hvis en toggle blir skrudd av -> vent til å slette denne fra oversikten og databasen til man går ut av view.
         [ ] - Disse skal vises i NAV view, hvor du kan trykke på en og bare nyheter fra denne vises.
         [ ] - Trykker man på ALL vises alle (fjern home og bytt til All).
+        [ ] - Før RSS feeden lagres i DB: Sjekk om den allerede ligger der ved å sammenligne header og "fra" felt.
         */
 
         /* ToDo - Database:
         [ ] - Legg til et felt for å diferensiere mellom RSS feeds, må være unique (lagre RSS linken).
-        [ ] - Få date til å fungere ved sammenligninger.
+        [ ] - Lag funksjon som sammenliger HEADER, "fra felt" og "date".
         */
 
         /* ToDo - Service:
         [ ] - Putt RSS parsing i en background service
         [ ] - La denne kjære automatisk ved et interval gitt i settings.
-         */
+        */
 
         /* ToDo - Søk:
         [ ] - Få søk til å søke etter "noe" i header og summary -> åpne egen Activity for disse.
         */
 
-        new ProcessInBackground().execute();
+        /* ToDo - Caching
+        [ ] - Legg på caching for bilder og innhold fra RSS.
+        */
 
+        //new ProcessInBackground().execute();
     }
 
     @Override
@@ -170,9 +179,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.settings) {
             Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
             return true;
-        } else if (id == R.id.help) {
-            Toast.makeText(this, "Help", Toast.LENGTH_SHORT).show();
-            return true;
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -180,10 +186,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    // ToDo: Change to service. Should run every x. min (as specified in preferences) and if DB is empty.
     public class ProcessInBackground extends AsyncTask<Integer, Void, Exception> {              // Async background task.
-
-        ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);           // Starts progress text.
+        ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);                   // Starts progress text.
         Exception exception = null;                                                             // Returns exception or null.
 
         @Override
@@ -195,7 +199,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
 
-        // ToDo: Only fetch items newer then <latest date in database> for each <RSS feed>.
         @Override
         protected Exception doInBackground(Integer... params) {                                 // XML parser in background.
             try {
@@ -263,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         protected void onPostExecute(Exception s) {                                             // After execution of background task:
             super.onPostExecute(s);
-           // mAdapter = new ContentAdapter(newsData);                                            // Creates a new adapter to RecycleView with the new data.
+            // mAdapter = new ContentAdapter(newsData);                                            // Creates a new adapter to RecycleView with the new data.
             mRecyclerView.setAdapter(mAdapter);                                                 // Connects to the adapter to display new data.
 
             // DB testing....

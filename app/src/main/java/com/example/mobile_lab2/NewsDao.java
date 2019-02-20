@@ -17,8 +17,6 @@ public interface NewsDao {
     @Query("SELECT * FROM news")                            // Get all News from the database.
     public News[] getAllNews();
 
-
-
     @Query("SELECT * FROM news WHERE epochDate < :date")    // Get all 'News' newer then <epoch-date>.
     public News[] newsNewerThenDate(long date);
 
