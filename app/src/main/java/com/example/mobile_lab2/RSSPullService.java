@@ -2,13 +2,12 @@ package com.example.mobile_lab2;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
-
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,19 +31,27 @@ public class RSSPullService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        // Do something...
-        Toast.makeText(this, "Hello from another thread", Toast.LENGTH_SHORT).show();
+
+        // ToDo: Loop through multiple RSS feeds and only load fetch ones that not already are in the database.
+        // ToDo: News website and images should be cached in the app.
 
         try {
             URL url = new URL("https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21");
-            ProcessRSSFeed(url);
+            ProcessRSSFeed(url);            // Fetches the news from the RSS feed.
 
-            // Start processing RSS feeds.
-            Log.d("RSS", "News items: " + mNewsList.size());
+            sendBroadcast(mNewsList);       // Sends the array back to main with broadcast.
+
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
 
+    }
+
+    // Sends broadcast to main.
+    private void sendBroadcast(ArrayList<News> news) {
+        Intent intent = new Intent(MainActivity.SERVICE_ACTION_RSS);
+        intent.putExtra(MainActivity.NEWS_LIST, news);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     public void ProcessRSSFeed(URL url) {

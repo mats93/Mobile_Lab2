@@ -1,10 +1,11 @@
 package com.example.mobile_lab2;
 
-import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -18,29 +19,20 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    public static final String NEWS_LIST = "NEWS_LIST";                                         // Constants.
+    public static final String SERVICE_ACTION_RSS = "SERVICE_ACTION_RSS";
+
     private RecyclerView mRecyclerView;                                                         // The RecycleView.
     private RecyclerView.Adapter mAdapter;                                                      // Adapter to the RecycleView.
     private RecyclerView.LayoutManager mLayoutManager;                                          // Layout manager for RecycleView.
     private SearchView mSearchView;                                                             // Search bar.
 
-    private String mTempDate;                                                                   // Date from xml, is inserted into "News" obj.
-    private String mTempHeader;                                                                 // Title from xml, is inserted into "News" obj.
-    private String mTempSummary;                                                                // Description from xml, is inserted into "News" obj.
-    private String mTempImage;                                                                  // Image from xml, is inserted into "News" obj.
-    private String mTempLink;                                                                   // URL link from xml, is inserted into "News" obj.
+    private DatabaseWrapper mDB;                                                                // Database.
 
-    // Database stuff....
-    private DatabaseWrapper mDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +52,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = findViewById(R.id.nav_view);                            // Gets the navigation bar.
         navigationView.setNavigationItemSelectedListener(this);                                 // Listener on nav bar.
 
-
         mRecyclerView = findViewById(R.id.contentView);                                         // Gets the RecyclerView.
         mRecyclerView.setHasFixedSize(true);                                                    // Optimizing.
 
@@ -69,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // ToDo: Implement database.
         mDB = new DatabaseWrapper(this, "news");
-        mDB.DropTable();
 
         //mDB.InsertToDB(new News("date", "Hello from DB",
         //       "This is a summary", "vg.no", "https://gfx.nrk.no/FPWgzpkxcBY29jwH7TIlgAJpWCcsl8C8Rd62b-jRZOsA"));
@@ -80,12 +70,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //mRecyclerView.setAdapter(mAdapter);
 
         // DB testing....
+        mDB.DropTable();
         News[] temp = mDB.getAllNewsFromDB();
         ArrayList<News> tempArrayList = new ArrayList<>(Arrays.asList(temp));
         mAdapter = new ContentAdapter(tempArrayList);
         mRecyclerView.setAdapter(mAdapter);
 
-        // TEMP: Service.
+
+        // Starts up the service.
+        // ToDo: Service should run every x minutes, also in the background when app is closed.
         Intent intent = new Intent(MainActivity.this, RSSPullService.class);
         startService(intent);
 
@@ -128,8 +121,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         /* ToDo - Caching
         [ ] - Legg på caching for bilder og innhold fra RSS.
         */
+    }
 
-        //new ProcessInBackground().execute();
+    // Broadcast receiver to receive from Service.
+    private BroadcastReceiver bReceiver = bReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ArrayList<News> news = intent.getExtras().getParcelableArrayList(NEWS_LIST);
+
+            mAdapter = new ContentAdapter(news);    // Adds content to RecycleView.
+            mRecyclerView.setAdapter(mAdapter);     // Attaches the RecycleView.
+        }
+    };
+
+    protected void onResume() {
+        super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(bReceiver,
+                new IntentFilter(SERVICE_ACTION_RSS));
     }
 
     @Override
@@ -184,100 +192,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-    public class ProcessInBackground extends AsyncTask<Integer, Void, Exception> {              // Async background task.
-        ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);                   // Starts progress text.
-        Exception exception = null;                                                             // Returns exception or null.
-
-        @Override
-        protected void onPreExecute() {                                                         // Sets progress dialog before execution.
-            super.onPreExecute();
-
-            progressDialog.setMessage("Busy loading news feed...");
-            progressDialog.show();
-        }
-
-
-        @Override
-        protected Exception doInBackground(Integer... params) {                                 // XML parser in background.
-            try {
-                URL url = new URL("https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21");                     // The RSS v.2 url to parse.
-                // https://www.nrk.no/toppsaker.rss
-                // https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21
-
-                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();              // Creates a new PullParser factory.
-                factory.setNamespaceAware(false);                                               // No support for XML namespaces.
-                XmlPullParser xpp = factory.newPullParser();                                    // Starts the parser.
-                xpp.setInput(url.openConnection().getInputStream(), "UTF_8");        // Opens up the URL connection.
-
-                boolean insideItem = false;                                                     // false if not inside an "item" tag in xml.
-                int eventType = xpp.getEventType();                                             // Gets the event type for the XML file.
-
-                while(eventType != XmlPullParser.END_DOCUMENT) {                                // Loop until parser has reached end of XML document:
-                    if (eventType == XmlPullParser.START_TAG) {                                 // If the parser is at an start tag in XML:
-                        if (xpp.getName().equals("item")) {                                     // If the parser is inside the "item" tag:
-                            insideItem = true;
-
-                        } else if(xpp.getName().equalsIgnoreCase("title")) {         // Gets the title/header form xml.
-                            if (insideItem) {
-                                mTempHeader = xpp.nextText();
-                            }
-                        } else if(xpp.getName().equalsIgnoreCase("description")) {   // Gets the description/summary form xml.
-                            if (insideItem) {
-                                mTempSummary = xpp.nextText();
-                            }
-                        } else if (xpp.getName().equalsIgnoreCase("enclosure")) {    // Gets the image url from xml.
-                            if (insideItem) {
-                                mTempImage = xpp.getAttributeValue(null, "url");
-                            }
-                        } else if (xpp.getName().equalsIgnoreCase("link")) {         // Gets the link to the news article from xml.
-                            if (insideItem) {
-                                mTempLink = xpp.nextText();
-                            }
-                        } else if(xpp.getName().equalsIgnoreCase("pubDate")) {       // Gets the published date from the xml.
-                            if (insideItem) {
-                                mTempDate = xpp.nextText();
-
-                                // ToDo: Insert into database. NewsDate should be mTempDate...
-                                mDB.InsertToDB(new News(mTempDate,
-                                        mTempHeader, mTempSummary, mTempLink, mTempImage));
-
-                                mTempImage = "";                                                // RSS 2 does not have to include an image or date.
-                                mTempDate = "";                                                 // Removes old entries in case of empty tags for next item.
-                            }
-                        }
-                    } else if (eventType == XmlPullParser.END_TAG &&                            // If parser has reached the end of the document
-                            xpp.getName().equalsIgnoreCase("item")) {                //  and is outside of "item" tag:
-                        insideItem = false;                                                     // Parser is no longer inside an "item" tag, should not read data.
-                    }
-                    eventType = xpp.next();                                                     // Gets the next line in the xml document.
-                }
-            } catch (MalformedURLException ex) {
-                exception = ex;
-            } catch (XmlPullParserException ex) {
-                exception = ex;
-            } catch (IOException ex) {
-                exception = ex;
-            }
-            return exception;                                                                   // Returns null or exception.
-        }
-
-        @Override
-        protected void onPostExecute(Exception s) {                                             // After execution of background task:
-            super.onPostExecute(s);
-            // mAdapter = new ContentAdapter(newsData);                                            // Creates a new adapter to RecycleView with the new data.
-            mRecyclerView.setAdapter(mAdapter);                                                 // Connects to the adapter to display new data.
-
-            // DB testing....
-            News[] temp = mDB.getAllNewsFromDB();
-
-            ArrayList<News> tempArrayList = new ArrayList<>(Arrays.asList(temp));
-
-            mAdapter = new ContentAdapter(tempArrayList);
-            mRecyclerView.setAdapter(mAdapter);
-
-            progressDialog.dismiss();
-        }
     }
 }
