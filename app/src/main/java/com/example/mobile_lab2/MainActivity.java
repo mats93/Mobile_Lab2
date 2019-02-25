@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    public static final String NEWS_LIST = "NEWS_LIST";                                         // Constants.
     public static final String SERVICE_ACTION_RSS = "SERVICE_ACTION_RSS";
 
     private RecyclerView mRecyclerView;                                                         // The RecycleView.
@@ -70,11 +69,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //mRecyclerView.setAdapter(mAdapter);
 
         // DB testing....
-        mDB.DropTable();
+        //mDB.DropTable();
         News[] temp = mDB.getAllNewsFromDB();
         ArrayList<News> tempArrayList = new ArrayList<>(Arrays.asList(temp));
         mAdapter = new ContentAdapter(tempArrayList);
         mRecyclerView.setAdapter(mAdapter);
+
+        Toast.makeText(this, "News in DB: " + tempArrayList.size(), Toast.LENGTH_SHORT).show();
 
 
         // Starts up the service.
@@ -89,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         [ ] - Hvis fetch nyhet sin dato >= siste element i databasen -> legg den til (Gjør dette for hver nye sak)
         [ ] - Slett alle database elementer hvor dato < siste fetchede nyhets dato.
         [ ] - Display nye saker
-        [ ] - Endre farge på de nyhetene som er klikket på.
+        [X] - Endre farge på de nyhetene som er klikket på.
         [ ] - Long click -> slett nyheten fra DB og view.
         */
 
@@ -110,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         */
 
         /* ToDo - Service:
-        [ ] - Putt RSS parsing i en background service
+        [X] - Putt RSS parsing i en background service
         [ ] - La denne kjære automatisk ved et interval gitt i settings.
         */
 
@@ -124,13 +125,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     // Broadcast receiver to receive from Service.
-    private BroadcastReceiver bReceiver = bReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver bReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            ArrayList<News> news = intent.getExtras().getParcelableArrayList(NEWS_LIST);
+            News[] temp = mDB.getAllNewsFromDB();
+            ArrayList<News> tempArrayList = new ArrayList<>(Arrays.asList(temp));
 
-            mAdapter = new ContentAdapter(news);    // Adds content to RecycleView.
-            mRecyclerView.setAdapter(mAdapter);     // Attaches the RecycleView.
+            mAdapter = new ContentAdapter(tempArrayList);       // Adds content to RecycleView.
+            mRecyclerView.setAdapter(mAdapter);                 // Attaches the RecycleView.
         }
     };
 

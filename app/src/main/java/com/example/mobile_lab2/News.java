@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.Locale;
 
 @Entity(tableName = "news")
-public class News implements Parcelable {
+public class News {
     @PrimaryKey(autoGenerate = true)
     private Integer mID;
 
@@ -49,33 +49,6 @@ public class News implements Parcelable {
         this.mEpochDate = this.convertDateToEpoch(newsDate);
         this.mMarkAsRead = false;
     }
-
-    protected News(Parcel in) {
-        if (in.readByte() == 0) {
-            mID = null;
-        } else {
-            mID = in.readInt();
-        }
-        mEpochDate = in.readLong();
-        mNewsDate = in.readString();
-        mNewsHeader = in.readString();
-        mNewsSummary = in.readString();
-        mNewsLink = in.readString();
-        mImageLink = in.readString();
-        mMarkAsRead = in.readByte() != 0;
-    }
-
-    public static final Creator<News> CREATOR = new Creator<News>() {
-        @Override
-        public News createFromParcel(Parcel in) {
-            return new News(in);
-        }
-
-        @Override
-        public News[] newArray(int size) {
-            return new News[size];
-        }
-    };
 
     public Integer getID() {
         return this.mID;
@@ -154,27 +127,5 @@ public class News implements Parcelable {
         }
 
         return tempDate;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        if (mID == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeInt(mID);
-        }
-        dest.writeLong(mEpochDate);
-        dest.writeString(mNewsDate);
-        dest.writeString(mNewsHeader);
-        dest.writeString(mNewsSummary);
-        dest.writeString(mNewsLink);
-        dest.writeString(mImageLink);
-        dest.writeByte((byte) (mMarkAsRead ? 1 : 0));
     }
 }

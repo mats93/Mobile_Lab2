@@ -80,4 +80,55 @@ public class DatabaseWrapper {
         return temp;
     }
 
+    public void markAsRead(String link) {
+        new AsyncTask<String, Void, Void>() {
+            @Override
+            protected Void doInBackground(String... strings){
+                mDB.daoAccess().markAsRead(strings[0]);
+                return null;
+            }
+        }.execute(link);
+    }
+
+    public boolean isMarkedAsRead(String link) {
+        Integer temp = 0;
+        try {
+            temp = new AsyncTask<String, Void, Integer>() {
+                @Override
+                protected Integer doInBackground(String... strings) {
+                    return mDB.daoAccess().isRead(strings[0]);
+                }
+            }.execute(link).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        if (temp == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public boolean articleExistsAlready(String link) {
+        Integer temp = 0;
+        try {
+            temp = new AsyncTask<String, Void, Integer>() {
+                @Override
+                protected Integer doInBackground(String... strings) {
+                    return mDB.daoAccess().articleExistsAlready(strings[0]);
+                }
+            }.execute(link).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        if (temp == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

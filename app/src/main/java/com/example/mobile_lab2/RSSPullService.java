@@ -19,7 +19,8 @@ public class RSSPullService extends IntentService {
     private String mTempHeader;                                                                 // Title from xml, is inserted into "News" obj.
     private String mTempSummary;                                                                // Description from xml, is inserted into "News" obj.
     private String mTempImage;                                                                  // Image from xml, is inserted into "News" obj.
-    private String mTempLink;                                                                 // URL link from xml, is inserted into "News" obj.
+    private String mTempLink;                                                                   // URL link from xml, is inserted into "News" obj.
+    private DatabaseWrapper mDB;
 
     public RSSPullService() {
         super("RSSPullService");
@@ -35,6 +36,8 @@ public class RSSPullService extends IntentService {
         // ToDo: Loop through multiple RSS feeds and only load fetch ones that not already are in the database.
         // ToDo: News website and images should be cached in the app.
 
+        mDB = new DatabaseWrapper(getBaseContext(), "news");
+
         try {
             URL url = new URL("https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21");
             ProcessRSSFeed(url);            // Fetches the news from the RSS feed.
@@ -47,10 +50,9 @@ public class RSSPullService extends IntentService {
 
     }
 
-    // Sends broadcast to main.
+    // Sends broadcast to main that new stuff has been added to the database.
     private void sendBroadcast(ArrayList<News> news) {
         Intent intent = new Intent(MainActivity.SERVICE_ACTION_RSS);
-        intent.putExtra(MainActivity.NEWS_LIST, news);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
@@ -93,14 +95,10 @@ public class RSSPullService extends IntentService {
                         if (insideItem) {
                             mTempDate = xpp.nextText();
 
-                            /* ToDo: Insert into database. NewsDate should be mTempDate...
-                            mDB.InsertToDB(new News(mTempDate,
-                                    mTempHeader, mTempSummary, mTempLink, mTempImage));
-                            */
-
-                            mNewsList.add(new News(mTempDate, mTempHeader,
-                                    mTempSummary, mTempLink, mTempImage));
-
+                            if (!mDB.articleExistsAlready(mTempLink)) {                     // If the article already exists, don`t add it.
+                                mDB.InsertToDB(new News(mTempDate, mTempHeader,
+                                        mTempSummary, mTempLink, mTempImage));
+                            }
                             mTempImage = "";                                                // RSS 2 does not have to include an image or date.
                             mTempDate = "";                                                 // Removes old entries in case of empty tags for next item.
                         }

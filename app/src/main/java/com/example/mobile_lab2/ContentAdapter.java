@@ -1,8 +1,10 @@
 package com.example.mobile_lab2;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 
 public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentViewHolder> {
     private ArrayList<News> mNewsList;                                           // ArrayList of news objects.
+    private DatabaseWrapper mDB;
 
     public class ContentViewHolder extends RecyclerView.ViewHolder {             // Inner class -> Holds a single 'card' inside the RecycleView.
         public static final String NEWS_ARTICLE = "NEWS_ARTICLE ";               // Name of the news link to be used in intent.
@@ -21,7 +24,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
         public TextView mTextViewNewsHeader;                                     // The "header" text in the layout.
         public TextView mTextViewNewsSummary;                                    // The "summary" text in the layout.
 
-
         public ContentViewHolder(@NonNull View itemView) {                       // Holds the content in the RecycleView.
             super(itemView);
             this.mImageViewNewsImage = itemView.findViewById(R.id.newsImage);    // Sets the image field.
@@ -29,13 +31,18 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
             this.mTextViewNewsHeader = itemView.findViewById(R.id.newsHeader);   // Sets the header field
             this.mTextViewNewsSummary = itemView.findViewById(R.id.newsSummary); // sets the summary field.
 
-
             itemView.setOnClickListener(v -> {                                   // Listener for when item is clicked.
                 News clickedItem = ContentAdapter.this.mNewsList.get(getAdapterPosition());
+
                 // Starts the WebView for the item clicked.
                 Intent intent = new Intent(itemView.getContext(), articleViewActivity.class);
                 intent.putExtra(NEWS_ARTICLE, clickedItem.getNewsLink());
                 itemView.getContext().startActivity(intent);
+
+                // Mark the article as read when clicked on.
+                mDB.markAsRead(clickedItem.getNewsLink());
+                this.mTextViewNewsHeader.setTextColor(Color.parseColor("#bdbdbd"));
+                this.mTextViewNewsSummary.setTextColor(Color.parseColor("#bdbdbd"));
             });
         }
     }
@@ -52,7 +59,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
 
         ContentViewHolder newsContent = new ContentViewHolder(v);
         return newsContent;
-
     }
 
     // ToDo: Get data from database and read image from internal storage.
@@ -60,9 +66,20 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
     public void onBindViewHolder(@NonNull ContentViewHolder contentViewHolder, int i) {
         News currentNewItem = mNewsList.get(i);
 
+        // If news has been clicked as read, change the color of the text.
+        mDB = new DatabaseWrapper(contentViewHolder.itemView.getContext(), "news");
+        if (mDB.isMarkedAsRead(mNewsList.get(i).getNewsLink())) {
+            contentViewHolder.mTextViewNewsHeader.setTextColor(Color.parseColor("#bdbdbd"));
+            contentViewHolder.mTextViewNewsSummary.setTextColor(Color.parseColor("#bdbdbd"));
+        }
+
+        // ToDo: Remove log.
+        Log.d("CONTENT", i + " is " + mDB.isMarkedAsRead(mNewsList.get(i).getNewsLink()));
+
         Glide.with(contentViewHolder.itemView.getContext()).                    // Loads the image into the view.
                 load(mNewsList.get(i).getImageLink()).
                 into(contentViewHolder.mImageViewNewsImage);
+
         // Loads the rest of the text into the views.
         contentViewHolder.mTextViewNewsDate.setText(currentNewItem.getNewsDate());
         contentViewHolder.mTextViewNewsHeader.setText(currentNewItem.getNewsHeader());
