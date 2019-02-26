@@ -39,7 +39,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
                 intent.putExtra(NEWS_ARTICLE, clickedItem.getNewsLink());
                 itemView.getContext().startActivity(intent);
 
-                // Mark the article as read when clicked on.
+                // Mark the article as read when clicked on and change color.
                 mDB.markAsRead(clickedItem.getNewsLink());
                 this.mTextViewNewsHeader.setTextColor(Color.parseColor("#bdbdbd"));
                 this.mTextViewNewsSummary.setTextColor(Color.parseColor("#bdbdbd"));
@@ -61,7 +61,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
         return newsContent;
     }
 
-    // ToDo: Get data from database and read image from internal storage.
     @Override                                                                   // Sets the content of the card.
     public void onBindViewHolder(@NonNull ContentViewHolder contentViewHolder, int i) {
         News currentNewItem = mNewsList.get(i);
@@ -71,10 +70,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
         if (mDB.isMarkedAsRead(mNewsList.get(i).getNewsLink())) {
             contentViewHolder.mTextViewNewsHeader.setTextColor(Color.parseColor("#bdbdbd"));
             contentViewHolder.mTextViewNewsSummary.setTextColor(Color.parseColor("#bdbdbd"));
+        } else {
+            contentViewHolder.mTextViewNewsHeader.setTextColor(Color.parseColor("#ffffff"));
+            contentViewHolder.mTextViewNewsSummary.setTextColor(Color.parseColor("#ffffff"));
         }
-
-        // ToDo: Remove log.
-        Log.d("CONTENT", i + " is " + mDB.isMarkedAsRead(mNewsList.get(i).getNewsLink()));
 
         Glide.with(contentViewHolder.itemView.getContext()).                    // Loads the image into the view.
                 load(mNewsList.get(i).getImageLink()).

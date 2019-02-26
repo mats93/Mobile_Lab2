@@ -63,23 +63,6 @@ public class DatabaseWrapper {
         return temp;
     }
 
-    public News[] getNewsNewerThenDate(Integer date) {
-        News[] temp = null;
-        try {
-            temp = new AsyncTask<Integer, Void, News[]>() {
-                @Override
-                protected News[] doInBackground(Integer... integers) {
-                    return mDB.daoAccess().newsNewerThenDate(integers[0]);
-                }
-            }.execute(date).get();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return temp;
-    }
-
     public void markAsRead(String link) {
         new AsyncTask<String, Void, Void>() {
             @Override
@@ -130,5 +113,15 @@ public class DatabaseWrapper {
         } else {
             return true;
         }
+    }
+
+    public void deleteOldNews(String link) {
+        new AsyncTask<String, Void, Void>() {
+            @Override
+            protected Void doInBackground(String... strings) {
+                mDB.daoAccess().deleteOldNews(strings[0]);
+                return null;
+            }
+        }.execute(link);
     }
 }

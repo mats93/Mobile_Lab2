@@ -15,23 +15,20 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static final String SERVICE_ACTION_RSS = "SERVICE_ACTION_RSS";
-
     private RecyclerView mRecyclerView;                                                         // The RecycleView.
     private RecyclerView.Adapter mAdapter;                                                      // Adapter to the RecycleView.
     private RecyclerView.LayoutManager mLayoutManager;                                          // Layout manager for RecycleView.
     private SearchView mSearchView;                                                             // Search bar.
-
     private DatabaseWrapper mDB;                                                                // Database.
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,38 +54,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mLayoutManager = new LinearLayoutManager(this);                                  // Connects the RecycleView.
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        // ToDo: Implement database.
-        mDB = new DatabaseWrapper(this, "news");
+        mDB = new DatabaseWrapper(this, "news");                                  // Connects the the database.
 
-        //mDB.InsertToDB(new News("date", "Hello from DB",
-        //       "This is a summary", "vg.no", "https://gfx.nrk.no/FPWgzpkxcBY29jwH7TIlgAJpWCcsl8C8Rd62b-jRZOsA"));
-
-        //newsData.add(temp);
-
-        //mAdapter = new ContentAdapter(newsData);
-        //mRecyclerView.setAdapter(mAdapter);
-
-        // DB testing....
         //mDB.DropTable();
-        News[] temp = mDB.getAllNewsFromDB();
-        ArrayList<News> tempArrayList = new ArrayList<>(Arrays.asList(temp));
-        mAdapter = new ContentAdapter(tempArrayList);
-        mRecyclerView.setAdapter(mAdapter);
+        News[] temp = mDB.getAllNewsFromDB();                                                   // Gets all news from the db.
+        ArrayList<News> news = new ArrayList<>(Arrays.asList(temp));
+        Collections.reverse(news);                                                              // Reverses the ArrayList. New news first.
+        mAdapter = new ContentAdapter(news);                                                    // Adds content to RecycleView.
+        mRecyclerView.setAdapter(mAdapter);                                                     // Attaches the RecycleView.
 
-        Toast.makeText(this, "News in DB: " + tempArrayList.size(), Toast.LENGTH_SHORT).show();
 
 
         // Starts up the service.
         // ToDo: Service should run every x minutes, also in the background when app is closed.
-        Intent intent = new Intent(MainActivity.this, RSSPullService.class);
-        startService(intent);
+        //Intent intent = new Intent(MainActivity.this, RSSPullService.class);
+        //startService(intent);
 
 
         /* ToDo - RSS feed lagring og visning:
         [X] - Hent inn alle saker fra databasen.
         [ ] - Kjør fetch for hver feed.
-        [ ] - Hvis fetch nyhet sin dato >= siste element i databasen -> legg den til (Gjør dette for hver nye sak)
-        [ ] - Slett alle database elementer hvor dato < siste fetchede nyhets dato.
+        [X] - Slett alle database elementer hvor dato < siste fetchede nyhets dato.
         [ ] - Display nye saker
         [X] - Endre farge på de nyhetene som er klikket på.
         [ ] - Long click -> slett nyheten fra DB og view.
@@ -107,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         /* ToDo - Database:
         [ ] - Legg til et felt for å diferensiere mellom RSS feeds, må være unique (lagre RSS linken).
-        [ ] - Lag funksjon som sammenliger HEADER, "fra felt" og "date".
         */
 
         /* ToDo - Service:
@@ -124,23 +109,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         */
     }
 
-    // Broadcast receiver to receive from Service.
-    private BroadcastReceiver bReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            News[] temp = mDB.getAllNewsFromDB();
-            ArrayList<News> tempArrayList = new ArrayList<>(Arrays.asList(temp));
-
-            mAdapter = new ContentAdapter(tempArrayList);       // Adds content to RecycleView.
-            mRecyclerView.setAdapter(mAdapter);                 // Attaches the RecycleView.
-        }
-    };
-
     protected void onResume() {
         super.onResume();
+
+        // ToDo: Should not start the service here, but every x minutes.
+        Intent intent = new Intent(MainActivity.this, RSSPullService.class);
+        startService(intent);
+
         LocalBroadcastManager.getInstance(this).registerReceiver(bReceiver,
                 new IntentFilter(SERVICE_ACTION_RSS));
     }
+
+    private BroadcastReceiver bReceiver = new BroadcastReceiver() {                             // Broadcast receiver to receive from Service.
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            News[] temp = mDB.getAllNewsFromDB();                                               // Gets all news from the db.
+            ArrayList<News> news = new ArrayList<>(Arrays.asList(temp));
+            Collections.reverse(news);                                                          // Reverses the ArrayList. New news first.
+            mAdapter = new ContentAdapter(news);                                                // Adds content to RecycleView.
+            mRecyclerView.setAdapter(mAdapter);                                                 // Attaches the RecycleView.
+        }
+    };
 
     @Override
     public void onBackPressed() {                                                               // Handles back press on nav bar:

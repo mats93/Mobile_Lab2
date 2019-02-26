@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -14,7 +13,6 @@ import java.net.URL;
 import java.util.ArrayList;
 
 public class RSSPullService extends IntentService {
-    private ArrayList<News> mNewsList = new ArrayList<>();
     private String mTempDate;                                                                   // Date from xml, is inserted into "News" obj.
     private String mTempHeader;                                                                 // Title from xml, is inserted into "News" obj.
     private String mTempSummary;                                                                // Description from xml, is inserted into "News" obj.
@@ -38,11 +36,16 @@ public class RSSPullService extends IntentService {
 
         mDB = new DatabaseWrapper(getBaseContext(), "news");
 
-        try {
-            URL url = new URL("https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21");
-            ProcessRSSFeed(url);            // Fetches the news from the RSS feed.
+        // https://www.nrk.no/toppsaker.rss
+        // https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21
+        // ToDo: The URL should be fetched from RSS class, and it should loop through all of them.
 
-            sendBroadcast(mNewsList);       // Sends the array back to main with broadcast.
+        try {
+            URL url = new URL("https://www.vg.no/rss/feed/?limit=20&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21");
+            ProcessRSSFeed(url);                                                            // Fetches the news from the RSS feed.
+
+            mDB.deleteOldNews(mTempLink);                                                   // Deletes news older then last inserted news.
+            sendBroadcast();                                                                // Sends broadcast to MainActivity.
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -50,17 +53,13 @@ public class RSSPullService extends IntentService {
 
     }
 
-    // Sends broadcast to main that new stuff has been added to the database.
-    private void sendBroadcast(ArrayList<News> news) {
+    private void sendBroadcast() {                                                          // Sends broadcast to local broadcast receiver.
         Intent intent = new Intent(MainActivity.SERVICE_ACTION_RSS);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     public void ProcessRSSFeed(URL url) {
         try {
-            // https://www.nrk.no/toppsaker.rss
-            // https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21
-
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();              // Creates a new PullParser factory.
             factory.setNamespaceAware(false);                                               // No support for XML namespaces.
             XmlPullParser xpp = factory.newPullParser();                                    // Starts the parser.

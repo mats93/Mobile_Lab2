@@ -11,26 +11,24 @@ import android.database.Cursor;
 @Dao
 public interface NewsDao {
     @Insert
-    public void insert(News... news);                           // Insert a new 'News' object.
+    public void insert(News... news);                               // Insert a new 'News' object.
 
-    @Query("SELECT * FROM news")                                // Get all News from the database.
+    @Query("SELECT * FROM news")                                    // Get all News from the database.
     public News[] getAllNews();
 
-    @Query("SELECT * FROM news WHERE epochDate < :date")        // Get all 'News' newer then <epoch-date>.
-    public News[] newsNewerThenDate(long date);
-
-    @Query("DELETE FROM news WHERE epochDate <= :date")         // Delete all news older then a specific <epoch-date>.
-    public void deleteNewsOlderThen(long date);
-
-    @Query("UPDATE news SET markAsRead = 1 WHERE link = :link") // Set markedAsRead to true.
+    @Query("UPDATE news SET markAsRead = 1 WHERE link = :link")     // Set markedAsRead to true.
     public void markAsRead(String link);
 
-    @Query("SELECT markAsRead FROM news WHERE link = :link")    // Returns if news article is marked as read or not.
+    @Query("SELECT markAsRead FROM news WHERE link = :link")        // Returns if news article is marked as read or not.
     public int isRead(String link);
 
     @Query("SELECT EXISTS(SELECT 1 FROM news WHERE link = :link)")  // Returns if news article exists already or not
     public int articleExistsAlready(String link);
 
-    @Query("DELETE FROM news")                                  // Deletes everything from the database.
+    @Query("DELETE FROM news WHERE epochDate < " +                  // Delete old news from the database.
+            "(SELECT epochDate FROM news WHERE link = :link)")
+    public void deleteOldNews(String link);
+
+    @Query("DELETE FROM news")                                      // Deletes everything from the database.
     public void dropTable();
 }
