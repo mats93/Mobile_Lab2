@@ -65,17 +65,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
 
-        // Starts up the service.
-        // ToDo: Service should run every x minutes, also in the background when app is closed.
-        //Intent intent = new Intent(MainActivity.this, RSSPullService.class);
-        //startService(intent);
+        // ToDo: Should not start the service here, but every x minutes.
+        Intent intent = new Intent(MainActivity.this, RSSPullService.class);
+        startService(intent);
 
 
         /* ToDo - RSS feed lagring og visning:
         [X] - Hent inn alle saker fra databasen.
         [ ] - Kjør fetch for hver feed.
         [X] - Slett alle database elementer hvor dato < siste fetchede nyhets dato.
-        [ ] - Display nye saker
+        [X] - Display nye saker
         [X] - Endre farge på de nyhetene som er klikket på.
         [ ] - Long click -> slett nyheten fra DB og view.
         */
@@ -111,10 +110,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     protected void onResume() {
         super.onResume();
-
-        // ToDo: Should not start the service here, but every x minutes.
-        Intent intent = new Intent(MainActivity.this, RSSPullService.class);
-        startService(intent);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(bReceiver,
                 new IntentFilter(SERVICE_ACTION_RSS));
@@ -173,6 +168,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (id == R.id.home) {                                                                  // Returns to main screen when 'Home' is clicked.
             return true;
         } else if (id == R.id.feeds) {
+            Intent intent = new Intent(this, RssFeeds.class);
+            startActivity(intent);
+
             Toast.makeText(this, "RSS feeds", Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.settings) {

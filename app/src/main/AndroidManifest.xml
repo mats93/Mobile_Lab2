@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-
+        <activity android:name=".RssFeeds"></activity>
         <activity android:name=".userPreferencesActivity" />
         <activity android:name=".articleViewActivity" />
         <activity
@@ -29,6 +29,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
             android:name=".RSSPullService"
             android:exported="false" />

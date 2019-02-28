@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -66,7 +67,7 @@ public class DatabaseWrapper {
     public void markAsRead(String link) {
         new AsyncTask<String, Void, Void>() {
             @Override
-            protected Void doInBackground(String... strings){
+            protected Void doInBackground(String... strings) {
                 mDB.daoAccess().markAsRead(strings[0]);
                 return null;
             }
@@ -123,5 +124,19 @@ public class DatabaseWrapper {
                 return null;
             }
         }.execute(link);
+    }
+
+    public void deleteNewsOlderThen(String days) {
+
+        // "'%s', 'now', '-:days day'";
+        String dateStatement = "'%s', 'now' '-" + days + " day'";
+
+        new AsyncTask<String, Void, Void>() {
+            @Override
+            protected Void doInBackground(String... strings) {
+                mDB.daoAccess().deleteNewsOlderThen(dateStatement);
+                return null;
+            }
+        }.execute(days);
     }
 }

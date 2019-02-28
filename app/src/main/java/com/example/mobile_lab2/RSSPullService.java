@@ -10,7 +10,14 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class RSSPullService extends IntentService {
     private String mTempDate;                                                                   // Date from xml, is inserted into "News" obj.
@@ -44,7 +51,13 @@ public class RSSPullService extends IntentService {
             URL url = new URL("https://www.vg.no/rss/feed/?limit=20&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21");
             ProcessRSSFeed(url);                                                            // Fetches the news from the RSS feed.
 
-            mDB.deleteOldNews(mTempLink);                                                   // Deletes news older then last inserted news.
+            // ToDo: Should this be changed, i.e. Delete after x days instead?
+            //  a = Get current time - x days
+            // delete news older then a
+
+            mDB.deleteNewsOlderThen("3");
+
+            //mDB.deleteOldNews(mTempLink);                                                   // Deletes news older then last inserted news.
             sendBroadcast();                                                                // Sends broadcast to MainActivity.
 
         } catch (MalformedURLException e) {

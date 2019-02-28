@@ -6,6 +6,8 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 import android.database.Cursor;
 
+import java.util.Date;
+
 // ToDo: Update "something" markedasread to true.
 
 @Dao
@@ -28,6 +30,9 @@ public interface NewsDao {
     @Query("DELETE FROM news WHERE epochDate < " +                  // Delete old news from the database.
             "(SELECT epochDate FROM news WHERE link = :link)")
     public void deleteOldNews(String link);
+
+    @Query("DELETE FROM news WHERE epochDate >= strftime(:days)")
+    public void deleteNewsOlderThen(String days);
 
     @Query("DELETE FROM news")                                      // Deletes everything from the database.
     public void dropTable();
