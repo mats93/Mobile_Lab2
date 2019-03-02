@@ -1,6 +1,8 @@
 package com.example.mobile_lab2;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,65 +18,99 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RssFeeds extends AppCompatActivity {
+    public static final String SHARED_PREFS_RSS = "SHARED_PREFS_RSS";           // Const for the name of shared preferences.
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rss_feeds);
+        setTitle("RSS feeds");
 
-
+        EditText rssInput = findViewById(R.id.edit_rss_insert);
         ListView rssList = findViewById(R.id.list_rss_feeds);
 
-        // Create som temp list.
-        ArrayList<String> temp = new ArrayList<>();
+        ArrayList<RssFeedEntry> rssFeeds = new ArrayList<>();                   // Holds rss objects.
+        ArrayList<String> rssContent = new ArrayList<>();                       // Holds rss strings to be shown in list.
 
-        // Get input from db? and from typed
-        EditText rssInput = findViewById(R.id.edit_rss_insert);
+        // ToDo: Get RssFeedEntry from shared prefs.
+        // ToDo: Create objects from them.
 
+        // Create som RSS feeds.
+        rssFeeds.add(
+                new RssFeedEntry("https://www.nrk.no/toppsaker.rss",
+                        false));
+        rssFeeds.add(
+                new RssFeedEntry("https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21",
+                        false));
+
+        // Convert to string array and connect to adapter.
+        for (int i = 0; i < rssFeeds.size(); i++) {
+            rssContent.add(rssFeeds.get(i).getUrl());
+        }
+        
 
         // Listen for input on the editable text (rss url).
         rssInput.setOnEditorActionListener((v, actionId, event) -> {
-            // If "done" is pressed in keyboard.
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {                       // If "done" is pressed in keyboard.
 
-                // Temp
-                Toast.makeText(RssFeeds.this, rssInput.getText(), Toast.LENGTH_SHORT).show();
-                temp.add(rssInput.getText().toString());
-                rssInput.setText("");
+                rssFeeds.add(new RssFeedEntry(                                  // Adds a new RSS object to the array.
+                        rssInput.getText().toString(), false));
+                rssContent.add(rssInput.getText().toString());                  // Adds the url to the view.
 
-                // Remove keyboard.
-                InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                // ToDo: Save to shared prefs.
+
+                rssInput.setText("");                                           // Removes text in "edit text" field.
+
+                InputMethodManager imm =                                        // Remove keyboard.
+                        (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 return true;
             }
             return false;
         });
 
+
         // Creates the array adapter and connects it to the rss list.
         ArrayAdapter<String> adapter = new ArrayAdapter<>(RssFeeds.this,
-                android.R.layout.simple_list_item_1, temp);
+                android.R.layout.simple_list_item_1, rssContent);
         rssList.setAdapter(adapter);
 
+
         // On short click listener for item clicked on.
-        rssList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(RssFeeds.this,
-                        "Picked " + rssList.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show();
+        rssList.setOnItemClickListener((parent, view, position, id) -> {        // Mark as active or not active.
+            if (rssFeeds.get(position).getIsMarked()) {                         // Change color to illustrate who is active.
+                rssFeeds.get(position).setIsMarked(false);
+                parent.getChildAt(position).setBackgroundColor(
+                        Color.parseColor("#D2D2D2"));
+            } else {
+                rssFeeds.get(position).setIsMarked(true);
+                parent.getChildAt(position).setBackgroundColor(
+                        Color.parseColor("#bdbdbd"));
             }
+
+            // ToDo: Update shared preferences.
+
         });
 
+
         // On long click listener for for item clicked on.
-        rssList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(RssFeeds.this,
-                        "Delete " + rssList.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show();
-                return true;
-            }
+        rssList.setOnItemLongClickListener((parent, view, position, id) -> {
+
+            // ToDo: Delete from shared preferences.
+
+
+            rssFeeds.remove(position);                                          // Delete from arrays.
+            rssContent.remove(position);
+            rssList.setAdapter(adapter);                                        // Updates adapter.
+
+            return true;
         });
 
 

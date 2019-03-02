@@ -64,48 +64,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mRecyclerView.setAdapter(mAdapter);                                                     // Attaches the RecycleView.
 
 
-
         // ToDo: Should not start the service here, but every x minutes.
         Intent intent = new Intent(MainActivity.this, RSSPullService.class);
         startService(intent);
 
 
-        /* ToDo - RSS feed lagring og visning:
-        [X] - Hent inn alle saker fra databasen.
-        [ ] - Kjør fetch for hver feed.
-        [X] - Slett alle database elementer hvor dato < siste fetchede nyhets dato.
-        [X] - Display nye saker
-        [X] - Endre farge på de nyhetene som er klikket på.
-        [ ] - Long click -> slett nyheten fra DB og view.
+        /* ToDo: Må gjøres:
+        [ ] - Lagre RSS feeds som blir skrevet inn
+        [ ] - Kjør fetch for hver av disse feedene.
+        [ ] - Lag en måte å velge en eller flere feeds
+        [ ] - Lag en måte å slette en feed
+        [ ] - Kjør servicen i bakgrunn
+        [ ] - Lagre feeds i database eller sharedpreferences
+        [X] - Lag en preferences side med:
+            [X] - Hvor mange items som skal vises i news listen (10, 20, 50, 70, 100)
+            [X] - Hvor ofte nye feeds skal legges inn (10m, 60m, once a day...)
+        [ ] - Legg til denne "ant news" constrainten i background service.
+        [ ] - Lag en måte å differansiere mellom rss feeds i databasen
+        [ ] - Legg til søk som skal søke etter artikkler som matcher ett sett "pattern" (regex)?
+        [ ] - Unit tests
         */
 
-        /* ToDo - RSS feed adding og sletting:
+        /* ToDo: Nice to have:
+        [ ] - Chache nyheter og bilder.
+        [ ] - Slett en news fra news lsiten (skal ikke komme opp igjen ved neste fetch)
         [ ] - Bruk API "https://cloud.feedly.com/v3/search/feeds/?query=nrk.no" for å søke etter feeds. Kan kjøre som Async.
-        [ ] - Valider linken -> Sjekk om det er RSS v2 og om den har content. Eller bruk forskjellige funksjoner for hver (ATOM, RSS).
-        [ ] - Display disse i en liste med Website - Title (hvor website er parset til bare domene)
-        [ ] - Bruk switch toggle eller radio buttons til å velge hvilke saker som skal vises.
-        [ ] - Hvis en toggle blir skrudd av -> vent til å slette denne fra oversikten og databasen til man går ut av view.
-        [ ] - Disse skal vises i NAV view, hvor du kan trykke på en og bare nyheter fra denne vises.
-        [ ] - Trykker man på ALL vises alle (fjern home og bytt til All).
-        [ ] - Før RSS feeden lagres i DB: Sjekk om den allerede ligger der ved å sammenligne header og "fra" felt.
+        [ ] - Valider RSS feeden som kommer opp, må støtet rss v.2 (eller har støtte for å parse forskjellige rss feeds)
+        [ ] - Display rss feeds på en penere måte (e.g: vg.no - toppsaker)
+        [ ] - Velg hvilke rss feeds som skal vises med en toggle i listen.
+        [ ] - Hvis antall news i title.
         */
 
-        /* ToDo - Database:
-        [ ] - Legg til et felt for å diferensiere mellom RSS feeds, må være unique (lagre RSS linken).
-        */
-
-        /* ToDo - Service:
-        [X] - Putt RSS parsing i en background service
-        [ ] - La denne kjære automatisk ved et interval gitt i settings.
-        */
-
-        /* ToDo - Søk:
-        [ ] - Få søk til å søke etter "noe" i header og summary -> åpne egen Activity for disse.
-        */
-
-        /* ToDo - Caching
-        [ ] - Legg på caching for bilder og innhold fra RSS.
-        */
     }
 
     protected void onResume() {
@@ -167,14 +156,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (id == R.id.home) {                                                                  // Returns to main screen when 'Home' is clicked.
             return true;
-        } else if (id == R.id.feeds) {
+        } else if (id == R.id.feeds) {                                                          // Starts RSS feed activity.
             Intent intent = new Intent(this, RssFeeds.class);
             startActivity(intent);
-
-            Toast.makeText(this, "RSS feeds", Toast.LENGTH_SHORT).show();
             return true;
-        } else if (id == R.id.settings) {
-            Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.settings) {                                                       // Starts the userPrefs activity.
+            Intent intent = new Intent(this, userPreferencesActivity.class);
+            startActivity(intent);
             return true;
         }
 
