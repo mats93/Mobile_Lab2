@@ -70,17 +70,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         /* ToDo: Må gjøres:
-        [ ] - Lagre RSS feeds som blir skrevet inn
         [ ] - Kjør fetch for hver av disse feedene.
-        [ ] - Lag en måte å velge en eller flere feeds
-        [ ] - Lag en måte å slette en feed
         [ ] - Kjør servicen i bakgrunn
-        [ ] - Lagre feeds i database eller sharedpreferences
         [X] - Lag en preferences side med:
             [X] - Hvor mange items som skal vises i news listen (10, 20, 50, 70, 100)
             [X] - Hvor ofte nye feeds skal legges inn (10m, 60m, once a day...)
-        [ ] - Legg til denne "ant news" constrainten i background service.
-        [ ] - Lag en måte å differansiere mellom rss feeds i databasen
+            [X] - RSS feed
+        [ ] - Legg til constrains fra shared prefs i RSS service.
         [ ] - Legg til søk som skal søke etter artikkler som matcher ett sett "pattern" (regex)?
         [ ] - Unit tests
         */
@@ -99,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     protected void onResume() {
         super.onResume();
-
         LocalBroadcastManager.getInstance(this).registerReceiver(bReceiver,
                 new IntentFilter(SERVICE_ACTION_RSS));
     }
@@ -155,10 +150,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         if (id == R.id.home) {                                                                  // Returns to main screen when 'Home' is clicked.
-            return true;
-        } else if (id == R.id.feeds) {                                                          // Starts RSS feed activity.
-            Intent intent = new Intent(this, RssFeeds.class);
-            startActivity(intent);
             return true;
         } else if (id == R.id.settings) {                                                       // Starts the userPrefs activity.
             Intent intent = new Intent(this, userPreferencesActivity.class);

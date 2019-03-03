@@ -42,22 +42,18 @@ public class RSSPullService extends IntentService {
         // ToDo: News website and images should be cached in the app.
 
         mDB = new DatabaseWrapper(getBaseContext(), "news");
+        Log.d("Service", "Service started");
 
-        // https://www.nrk.no/toppsaker.rss
-        // https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21
+        // Skal ikke hente inn flere RSS feeds enn det som står i settings (shared prefs)
         // ToDo: The URL should be fetched from RSS class, and it should loop through all of them.
 
         try {
             URL url = new URL("https://www.vg.no/rss/feed/?limit=20&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21");
             ProcessRSSFeed(url);                                                            // Fetches the news from the RSS feed.
 
-            // ToDo: Should this be changed, i.e. Delete after x days instead?
-            //  a = Get current time - x days
-            // delete news older then a
 
-            mDB.deleteNewsOlderThen("3");
+            mDB.deleteNewsOlderThen("3");                                               // Deletes news older then 3 days from DB.
 
-            //mDB.deleteOldNews(mTempLink);                                                   // Deletes news older then last inserted news.
             sendBroadcast();                                                                // Sends broadcast to MainActivity.
 
         } catch (MalformedURLException e) {
@@ -122,11 +118,11 @@ public class RSSPullService extends IntentService {
                 eventType = xpp.next();                                                     // Gets the next line in the xml document.
             }
         } catch (MalformedURLException ex) {
-            Log.d("RSS Pull", "ProcessRSSFeed: " + ex);
+            Log.d("RSS Pull malformedURL", "ProcessRSSFeed: " + ex);
         } catch (XmlPullParserException ex) {
-            Log.d("RSS Pull", "ProcessRSSFeed: " + ex);
+            Log.d("RSS Pull xmlparser", "ProcessRSSFeed: " + ex);
         } catch (IOException ex) {
-            Log.d("RSS Pull", "ProcessRSSFeed: " + ex);
+            Log.d("RSS Pull io", "ProcessRSSFeed: " + ex);
         }
     }
 }

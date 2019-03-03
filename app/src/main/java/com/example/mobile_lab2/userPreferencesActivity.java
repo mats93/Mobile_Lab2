@@ -5,15 +5,19 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
 public class userPreferencesActivity extends AppCompatActivity {
-    public static final String SHARED_PREFS_SETTINGS = "SHARED_PREFS_SETTINGS";   // Const for the name of shared preferences.
+    public static final String SHARED_PREFS_SETTINGS = "SHARED_PREFS_SETTINGS";     // Const for settings shared preferences.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +28,8 @@ public class userPreferencesActivity extends AppCompatActivity {
         SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS_SETTINGS, Context.MODE_PRIVATE);
         Spinner numberOfNewsDisplay = findViewById(R.id.spinner_NoOfNews);
         Spinner syncIntervalNews = findViewById(R.id.spinner_SyncInterval);
+        EditText rssInput = findViewById(R.id.edit_rss_insert);
+        TextView rssShow = findViewById(R.id.text_show_rss);
         Button btnApplyChanges = findViewById(R.id.btn_apply);
 
         // Array to populate the spinners.
@@ -44,6 +50,10 @@ public class userPreferencesActivity extends AppCompatActivity {
         syncItems.add("12 hours");
         syncItems.add("24 hours");
 
+        // Example of RSS feeds:
+        // https://www.nrk.no/toppsaker.rss
+        // https://www.vg.no/rss/feed/?limit=10&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21
+
         // Connect to spinner for "numberOfNewsDisplay".
         ArrayAdapter<Integer> newsDisplayAdapter = new ArrayAdapter<>(userPreferencesActivity.this,
                 android.R.layout.simple_list_item_1, newsDisplayItems);
@@ -56,9 +66,27 @@ public class userPreferencesActivity extends AppCompatActivity {
         syncItemsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         syncIntervalNews.setAdapter(syncItemsAdapter);
 
-        // Read state from shared preferences.
+        // Read settings from shared preferences.
         numberOfNewsDisplay.setSelection(sharedpreferences.getInt("numberOfNewsToShow",0));
         syncIntervalNews.setSelection(sharedpreferences.getInt("syncIntervalNews", 0));
+
+        // Read rss from shared preferences.
+        rssShow.setText(sharedpreferences.getString("rss", ""));
+
+        // Listen for input on the editable text (rss url).
+        rssInput.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {                       // If "done" is pressed in keyboard.
+
+                rssShow.setText(rssInput.getText().toString());                 // Set content of text view.
+                rssInput.setText("");                                           // Removes text in "edit text" field.
+
+                InputMethodManager imm =                                        // Remove keyboard.
+                        (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                return true;
+            }
+            return false;
+        });
 
         // Button listener.
         btnApplyChanges.setOnClickListener(v -> {
@@ -66,6 +94,7 @@ public class userPreferencesActivity extends AppCompatActivity {
             SharedPreferences.Editor editor = sharedpreferences.edit();
             editor.putInt("numberOfNewsToShow", numberOfNewsDisplay.getSelectedItemPosition());
             editor.putInt("syncIntervalNews", syncIntervalNews.getSelectedItemPosition());
+            editor.putString("rss", rssShow.getText().toString());
             editor.apply();
 
             // Display toast.
