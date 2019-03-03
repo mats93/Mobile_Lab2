@@ -1,7 +1,9 @@
 package com.example.mobile_lab2;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import org.xmlpull.v1.XmlPullParser;
@@ -10,16 +12,9 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 
 public class RSSPullService extends IntentService {
+    private SharedPreferences mSharedpreferences;
     private String mTempDate;                                                                   // Date from xml, is inserted into "News" obj.
     private String mTempHeader;                                                                 // Title from xml, is inserted into "News" obj.
     private String mTempSummary;                                                                // Description from xml, is inserted into "News" obj.
@@ -37,20 +32,14 @@ public class RSSPullService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-
-        // ToDo: Loop through multiple RSS feeds and only load fetch ones that not already are in the database.
-        // ToDo: News website and images should be cached in the app.
+        mSharedpreferences = getSharedPreferences(userPreferencesActivity.SHARED_PREFS_SETTINGS, Context.MODE_PRIVATE);
 
         mDB = new DatabaseWrapper(getBaseContext(), "news");
-        Log.d("Service", "Service started");
-
-        // Skal ikke hente inn flere RSS feeds enn det som står i settings (shared prefs)
-        // ToDo: The URL should be fetched from RSS class, and it should loop through all of them.
+        String rssURL = mSharedpreferences.getString("rss", "");
 
         try {
-            URL url = new URL("https://www.vg.no/rss/feed/?limit=20&format=rss&private=1&submit=Abonn%C3%A9r+n%C3%A5%21");
+            URL url = new URL(rssURL);
             ProcessRSSFeed(url);                                                            // Fetches the news from the RSS feed.
-
 
             mDB.deleteNewsOlderThen("3");                                               // Deletes news older then 3 days from DB.
 
@@ -59,7 +48,6 @@ public class RSSPullService extends IntentService {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-
     }
 
     private void sendBroadcast() {                                                          // Sends broadcast to local broadcast receiver.
@@ -77,8 +65,7 @@ public class RSSPullService extends IntentService {
             boolean insideItem = false;                                                     // false if not inside an "item" tag in xml.
             int eventType = xpp.getEventType();                                             // Gets the event type for the XML file.
 
-
-            while(eventType != XmlPullParser.END_DOCUMENT) {                                // Loop until parser has reached end of XML document:
+            while(eventType != XmlPullParser.END_DOCUMENT ) {                               // Loop until parser has reached end of XML document:
                 if (eventType == XmlPullParser.START_TAG) {                                 // If the parser is at an start tag in XML:
                     if (xpp.getName().equals("item")) {                                     // If the parser is inside the "item" tag:
                         insideItem = true;

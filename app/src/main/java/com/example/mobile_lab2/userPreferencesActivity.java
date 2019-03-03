@@ -67,8 +67,12 @@ public class userPreferencesActivity extends AppCompatActivity {
         syncIntervalNews.setAdapter(syncItemsAdapter);
 
         // Read settings from shared preferences.
-        numberOfNewsDisplay.setSelection(sharedpreferences.getInt("numberOfNewsToShow",0));
-        syncIntervalNews.setSelection(sharedpreferences.getInt("syncIntervalNews", 0));
+        int numberOfNews = sharedpreferences.getInt("numberOfNewsToShow",0);
+        String syncInterval = sharedpreferences.getString("syncIntervalNews", "");
+
+        // Sett the spinner to display the selected item from shared preferences.
+        numberOfNewsDisplay.setSelection(newsDisplayItems.indexOf(numberOfNews));
+        syncIntervalNews.setSelection(syncItems.indexOf(syncInterval));
 
         // Read rss from shared preferences.
         rssShow.setText(sharedpreferences.getString("rss", ""));
@@ -92,8 +96,9 @@ public class userPreferencesActivity extends AppCompatActivity {
         btnApplyChanges.setOnClickListener(v -> {
             // Save state to shared preferences.
             SharedPreferences.Editor editor = sharedpreferences.edit();
-            editor.putInt("numberOfNewsToShow", numberOfNewsDisplay.getSelectedItemPosition());
-            editor.putInt("syncIntervalNews", syncIntervalNews.getSelectedItemPosition());
+
+            editor.putInt("numberOfNewsToShow", Integer.parseInt(numberOfNewsDisplay.getSelectedItem().toString()));
+            editor.putString("syncIntervalNews", syncIntervalNews.getSelectedItem().toString());
             editor.putString("rss", rssShow.getText().toString());
             editor.apply();
 

@@ -47,18 +47,18 @@ public class DatabaseWrapper {
         }.execute(news);
     }
 
-    public News[] getAllNewsFromDB() {
+    public News[] getNewsFromDB(Integer num) {
         News[] temp = null;
         try {
-            temp = new AsyncTask<Void, Void, News[]>() {
+            temp = new AsyncTask<Integer, Void, News[]>() {
                 @Override
-                protected News[] doInBackground(Void... voids) {
-                    return mDB.daoAccess().getAllNews();
+                protected News[] doInBackground(Integer... integers) {
+                    return mDB.daoAccess().getNews(integers[0]);
                 }
-            }.execute().get();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+            }.execute(num).get();
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
             e.printStackTrace();
         }
         return temp;
@@ -114,16 +114,6 @@ public class DatabaseWrapper {
         } else {
             return true;
         }
-    }
-
-    public void deleteOldNews(String link) {
-        new AsyncTask<String, Void, Void>() {
-            @Override
-            protected Void doInBackground(String... strings) {
-                mDB.daoAccess().deleteOldNews(strings[0]);
-                return null;
-            }
-        }.execute(link);
     }
 
     public void deleteNewsOlderThen(String days) {

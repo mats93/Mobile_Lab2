@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -54,15 +55,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mLayoutManager = new LinearLayoutManager(this);                                  // Connects the RecycleView.
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        mDB = new DatabaseWrapper(this, "news");                                  // Connects the the database.
-
-        //mDB.DropTable();
-        News[] temp = mDB.getAllNewsFromDB();                                                   // Gets all news from the db.
-        ArrayList<News> news = new ArrayList<>(Arrays.asList(temp));
-        Collections.reverse(news);                                                              // Reverses the ArrayList. New news first.
-        mAdapter = new ContentAdapter(news);                                                    // Adds content to RecycleView.
-        mRecyclerView.setAdapter(mAdapter);                                                     // Attaches the RecycleView.
-
+        populateNewsAdapter();                                                                  // Populates the recycle view.
 
         // ToDo: Should not start the service here, but every x minutes.
         Intent intent = new Intent(MainActivity.this, RSSPullService.class);
@@ -70,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         /* ToDo: Må gjøres:
-        [ ] - Kjør fetch for hver av disse feedene.
         [ ] - Kjør servicen i bakgrunn
         [X] - Lag en preferences side med:
             [X] - Hvor mange items som skal vises i news listen (10, 20, 50, 70, 100)
@@ -93,6 +85,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    public void populateNewsAdapter() {                                                         // Add news to recycle view.
+        mDB = new DatabaseWrapper(this, "news");                                  // Connects the the database.
+        SharedPreferences sharedPreferences =                                                   // Connects to shared preferences.
+                getSharedPreferences(
+                        userPreferencesActivity.SHARED_PREFS_SETTINGS,
+                        Context.MODE_PRIVATE
+                );
+
+        int numberOfNews = sharedPreferences.getInt("numberOfNewsToShow", 10);      // Number of news to show.
+        News[] tempNews = mDB.getNewsFromDB(numberOfNews);                                      // Get news from db.
+        ArrayList<News> news = new ArrayList<>(Arrays.asList(tempNews));                        // Convert List to ArrayList.
+        mAdapter = new ContentAdapter(news);                                                    // Adds content to RecycleView.
+        mRecyclerView.setAdapter(mAdapter);                                                     // Attaches the RecycleView.
+    }
+
     protected void onResume() {
         super.onResume();
         LocalBroadcastManager.getInstance(this).registerReceiver(bReceiver,
@@ -102,11 +109,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private BroadcastReceiver bReceiver = new BroadcastReceiver() {                             // Broadcast receiver to receive from Service.
         @Override
         public void onReceive(Context context, Intent intent) {
-            News[] temp = mDB.getAllNewsFromDB();                                               // Gets all news from the db.
-            ArrayList<News> news = new ArrayList<>(Arrays.asList(temp));
-            Collections.reverse(news);                                                          // Reverses the ArrayList. New news first.
-            mAdapter = new ContentAdapter(news);                                                // Adds content to RecycleView.
-            mRecyclerView.setAdapter(mAdapter);                                                 // Attaches the RecycleView.
+            populateNewsAdapter();
         }
     };
 
