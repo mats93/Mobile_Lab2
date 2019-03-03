@@ -74,8 +74,7 @@ public class userPreferencesActivity extends AppCompatActivity {
         numberOfNewsDisplay.setSelection(newsDisplayItems.indexOf(numberOfNews));
         syncIntervalNews.setSelection(syncItems.indexOf(syncInterval));
 
-        // Read rss from shared preferences.
-        rssShow.setText(sharedpreferences.getString("rss", ""));
+        rssShow.setText(sharedpreferences.getString("rss", ""));    // Read rss from shared preferences.
 
         // Listen for input on the editable text (rss url).
         rssInput.setOnEditorActionListener((v, actionId, event) -> {
@@ -94,19 +93,24 @@ public class userPreferencesActivity extends AppCompatActivity {
 
         // Button listener.
         btnApplyChanges.setOnClickListener(v -> {
-            // Save state to shared preferences.
-            SharedPreferences.Editor editor = sharedpreferences.edit();
 
-            editor.putInt("numberOfNewsToShow", Integer.parseInt(numberOfNewsDisplay.getSelectedItem().toString()));
-            editor.putString("syncIntervalNews", syncIntervalNews.getSelectedItem().toString());
+            SharedPreferences.Editor editor = sharedpreferences.edit();         // Save state to shared preferences.
+
+            editor.putInt("numberOfNewsToShow",
+                    Integer.parseInt(numberOfNewsDisplay.getSelectedItem().toString()));
+
+            editor.putString("syncIntervalNews",
+                    syncIntervalNews.getSelectedItem().toString());
+
             editor.putString("rss", rssShow.getText().toString());
-            editor.apply();
+            editor.apply();                                                     // Applies the changes.
 
-            // Display toast.
+
             Toast toast = Toast.makeText(userPreferencesActivity.this,
                     "changes applied successfully", Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
+            MainActivity.startBackgroundService(this);                  // Starts the background service.
         });
     }
 }

@@ -32,22 +32,23 @@ public class RSSPullService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        mSharedpreferences = getSharedPreferences(userPreferencesActivity.SHARED_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        Log.d("RSS service", "RSS background service started");
 
+        mSharedpreferences = getSharedPreferences(userPreferencesActivity.SHARED_PREFS_SETTINGS, Context.MODE_PRIVATE);
         mDB = new DatabaseWrapper(getBaseContext(), "news");
         String rssURL = mSharedpreferences.getString("rss", "");
 
         try {
             URL url = new URL(rssURL);
             ProcessRSSFeed(url);                                                            // Fetches the news from the RSS feed.
-
             mDB.deleteNewsOlderThen("3");                                               // Deletes news older then 3 days from DB.
-
             sendBroadcast();                                                                // Sends broadcast to MainActivity.
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+
+        Log.d("RSS service", "RSS background service finished");
     }
 
     private void sendBroadcast() {                                                          // Sends broadcast to local broadcast receiver.
@@ -105,11 +106,11 @@ public class RSSPullService extends IntentService {
                 eventType = xpp.next();                                                     // Gets the next line in the xml document.
             }
         } catch (MalformedURLException ex) {
-            Log.d("RSS Pull malformedURL", "ProcessRSSFeed: " + ex);
+            Log.d("RSS service", "ProcessRSSFeed: " + ex);
         } catch (XmlPullParserException ex) {
-            Log.d("RSS Pull xmlparser", "ProcessRSSFeed: " + ex);
+            Log.d("RSS service", "ProcessRSSFeed: " + ex);
         } catch (IOException ex) {
-            Log.d("RSS Pull io", "ProcessRSSFeed: " + ex);
+            Log.d("RSS service", "ProcessRSSFeed: " + ex);
         }
     }
 }

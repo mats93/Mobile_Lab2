@@ -21,7 +21,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static final String SERVICE_ACTION_RSS = "SERVICE_ACTION_RSS";
@@ -56,19 +55,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         populateNewsAdapter();                                                                  // Populates the recycle view.
-
-        // ToDo: Should not start the service here, but every x minutes.
-        Intent intent = new Intent(MainActivity.this, RSSPullService.class);
-        startService(intent);
-
+        startBackgroundService(this);                                                    // Starts the service to fetch RSS feeds.
 
         /* ToDo: Må gjøres:
         [ ] - Kjør servicen i bakgrunn
+            [ ] - Bruk constraints fra settings.
         [X] - Lag en preferences side med:
             [X] - Hvor mange items som skal vises i news listen (10, 20, 50, 70, 100)
             [X] - Hvor ofte nye feeds skal legges inn (10m, 60m, once a day...)
             [X] - RSS feed
-        [ ] - Legg til constrains fra shared prefs i RSS service.
+        [X] - Legg til constrains fra shared prefs i RSS service.
         [ ] - Legg til søk som skal søke etter artikkler som matcher ett sett "pattern" (regex)?
         [ ] - Unit tests
         */
@@ -82,7 +78,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         [ ] - Velg hvilke rss feeds som skal vises med en toggle i listen.
         [ ] - Hvis antall news i title.
         */
+    }
 
+    public static void startBackgroundService(Context context) {                                // Starts the background service.
+        Intent intent = new Intent(context, RSSPullService.class);
+        context.startService(intent);
     }
 
     public void populateNewsAdapter() {                                                         // Add news to recycle view.
