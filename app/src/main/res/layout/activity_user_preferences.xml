@@ -82,7 +82,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
-        android:text="Add a new RSS feed by typing in the RSS v.2 link"
+        android:text="Add a new RSS feed by typing in the RSS 2.0 link"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         app:layout_constraintStart_toEndOf="@+id/imageView"
         app:layout_constraintTop_toBottomOf="@+id/divider" />
