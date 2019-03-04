@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/ColorOffWhite"
+    android:id="@+id/scrollView2"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     tools:context=".userPreferencesActivity" >
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".TransactionsActivity">
 
     <TextView
         android:id="@+id/textView4"
@@ -14,6 +27,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:text="Number of news articles to display:"
+        android:textSize="13sp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -25,6 +39,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:text="Sync interval for fetching new news:"
+        android:textSize="13sp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
@@ -35,7 +50,6 @@
         android:layout_height="26dp"
         android:layout_marginStart="18dp"
         android:layout_marginTop="30dp"
-        android:layout_marginEnd="24dp"
         android:maxLines="1"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -48,7 +62,6 @@
         android:layout_height="26dp"
         android:layout_marginStart="12dp"
         android:layout_marginTop="25dp"
-        android:layout_marginEnd="24dp"
         android:maxLines="1"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -119,27 +132,30 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:text="vg.no"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView8" />
 
-    <Button
-        android:id="@+id/btn_apply"
-        android:layout_width="0dp"
-        android:layout_height="79dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="16dp"
-        android:background="@color/ColorPrimaryLighter"
-        android:text="Apply changes"
-        android:textColor="@color/ColorOffWhite"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <Button
+            android:id="@+id/btn_apply"
+            android:layout_width="0dp"
+            android:layout_height="79dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="450dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:background="@color/ColorPrimaryLighter"
+            android:text="Apply changes"
+            android:textColor="@color/ColorOffWhite"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
+    </android.support.constraint.ConstraintLayout>
 
-</android.support.constraint.ConstraintLayout>
+    </LinearLayout>
+</ScrollView>

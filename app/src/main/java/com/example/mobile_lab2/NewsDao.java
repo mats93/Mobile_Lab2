@@ -12,6 +12,9 @@ public interface NewsDao {
     @Query("SELECT * FROM news ORDER BY epochDate DESC LIMIT :num") // Get news from the database.
     public News[] getNews(Integer num);
 
+    @Query("SELECT * FROM news WHERE header like :query OR summary like :query")
+    public News[] getFilteredNews(String query);
+
     @Query("UPDATE news SET markAsRead = 1 WHERE link = :link")     // Set markedAsRead to true.
     public void markAsRead(String link);
 

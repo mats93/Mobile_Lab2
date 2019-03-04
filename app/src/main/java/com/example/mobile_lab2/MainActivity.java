@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mLayoutManager = new LinearLayoutManager(this);                                  // Connects the RecycleView.
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        populateNewsAdapter();                                                                  // Populates the recycle view.
+        populateNewsAdapter(false, "");                                            // Populates the recycle view.
         startPendingBackgroundService();                                                        // Starts the service to fetch RSS feeds.
 
         /* ToDo: Må gjøres:
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             [X] - Hvor mange items som skal vises i news listen (10, 20, 50, 70, 100)
             [X] - Hvor ofte nye feeds skal legges inn (10m, 60m, once a day...)
             [X] - RSS feed
-        [ ] - Legg til søk som skal søke etter artikkler som matcher ett sett "pattern" (regex)?
+        [X] - Legg til søk som skal søke etter artikkler som matcher ett sett "pattern" (regex)?
         [ ] - Unit tests
         */
 
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 System.currentTimeMillis(), mili, pIntent);
     }
 
-    public void populateNewsAdapter() {                                                         // Add news to recycle view.
+    public void populateNewsAdapter(boolean isFiltered, String query) {                         // Add news to recycle view.
         mDB = new DatabaseWrapper(this, "news");                                  // Connects the the database.
         SharedPreferences sharedPreferences =                                                   // Connects to shared preferences.
                 getSharedPreferences(
@@ -137,7 +137,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 );
 
         int numberOfNews = sharedPreferences.getInt("numberOfNewsToShow", 10);      // Number of news to show.
-        News[] tempNews = mDB.getNewsFromDB(numberOfNews);                                      // Get news from db.
+
+        News[] tempNews;
+        if (isFiltered) {
+            tempNews = mDB.getFilteredNewsFromDB(query);                                        // Get filtered news from db.
+        } else {
+            tempNews = mDB.getNewsFromDB(numberOfNews);                                          // Get news from db.
+        }
+
+
         ArrayList<News> news = new ArrayList<>(Arrays.asList(tempNews));                        // Convert List to ArrayList.
         mAdapter = new ContentAdapter(news);                                                    // Adds content to RecycleView.
         mRecyclerView.setAdapter(mAdapter);                                                     // Attaches the RecycleView.
@@ -152,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private BroadcastReceiver bReceiver = new BroadcastReceiver() {                             // Broadcast receiver to receive from Service.
         @Override
         public void onReceive(Context context, Intent intent) {
-            populateNewsAdapter();
+            populateNewsAdapter(false, "");
         }
     };
 
@@ -170,24 +178,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onCreateOptionsMenu(Menu menu) {                                             // Handles toolbar options (Search):
         getMenuInflater().inflate(R.menu.main, menu);
 
-        MenuItem myActionMenuItem = menu.findItem( R.id.action_search);                         // Gets the search from the menu.
+        MenuItem myActionMenuItem = menu.findItem(R.id.action_search);                          // Gets the search from the menu.
         mSearchView = (SearchView) myActionMenuItem.getActionView();
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {               // Listener for text changes.
             @Override
             public boolean onQueryTextSubmit(String query) {                                    // When query is submitted:
-
-                // ToDo: Do something with query.
-                
-                Toast.makeText(getBaseContext(), query, Toast.LENGTH_LONG).show();
-
-                if( ! mSearchView.isIconified()) {                                              // Removes focus from search.
-                    mSearchView.setIconified(true);
-                }
-                myActionMenuItem.collapseActionView();                                          // Clears the search text.
+                populateNewsAdapter(true, query);                                       // Populates Recycle view with the filtered search.
                 return false;
             }
             @Override
             public boolean onQueryTextChange(String s) {
+                if (s.equals("")) {
+                    populateNewsAdapter(false, "");                                 // Reset Recycle view when blank query.
+                }
                 return false;
             }
         });

@@ -59,6 +59,25 @@ public class DatabaseWrapper {
         return temp;
     }
 
+    public News[] getFilteredNewsFromDB(String query) {
+        String useQuery = "%" + query + "%";
+
+        News[] temp = null;
+        try {
+            temp = new AsyncTask<String, Void, News[]>() {
+                @Override
+                protected News[] doInBackground(String... strings) {
+                    return mDB.daoAccess().getFilteredNews(strings[0]);
+                }
+            }.execute(useQuery).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return temp;
+    }
+
     public void markAsRead(String link) {
         new AsyncTask<String, Void, Void>() {
             @Override

@@ -33,7 +33,6 @@
         <service
             android:name=".RSSPullService"
             android:exported="false" />
-        <receiver android:process=":remote" android:name=".Alarm" />
     </application>
 
 </manifest>
