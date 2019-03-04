@@ -9,9 +9,9 @@ How many news that are displayed at any time are based on the 'number of news ar
 
 
 ## App layout:
-![](google.com)
+![](https://raw.githubusercontent.com/mats93/Mobile_Lab2/master/extra/app.png)
 
 ### Additional information: 
-[Link to the task details](google.com)
+[Link to the task details](https://github.com/mats93/Mobile_Lab2/blob/master/extra/TaskDetails.md)
 
 Created by Mats Ove Mandt Skjærstein, 2019
