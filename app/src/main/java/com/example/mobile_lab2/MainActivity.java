@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             [X] - Hvor mange items som skal vises i news listen (10, 20, 50, 70, 100)
             [X] - Hvor ofte nye feeds skal legges inn (10m, 60m, once a day...)
             [X] - RSS feed
-        [X] - Legg til constrains fra shared prefs i RSS service.
         [ ] - Legg til søk som skal søke etter artikkler som matcher ett sett "pattern" (regex)?
         [ ] - Unit tests
         */
