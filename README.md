@@ -1,6 +1,5 @@
 # Android - Simple RSS 2.0 NEWS reader
-Lab 2 in the course IMT3673-2019 (Mobile Programming) at NTNU Gjøvik.    
-A simple RSS news reader that support RSSv2.
+Lab 2 in the course IMT3673-2019 (Mobile Programming) at NTNU Gjøvik.
 
 ## Application functionality: 
 Type inn the url to the RSS 2.0 news site you want to subscribe to in the settings menu.    
