@@ -1,5 +1,7 @@
 package com.example.mobile_lab2;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -55,11 +57,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         populateNewsAdapter();                                                                  // Populates the recycle view.
-        startBackgroundService(this);                                                    // Starts the service to fetch RSS feeds.
+        startPendingBackgroundService();                                                        // Starts the service to fetch RSS feeds.
 
         /* ToDo: Må gjøres:
-        [ ] - Kjør servicen i bakgrunn
-            [ ] - Bruk constraints fra settings.
+        [X] - Kjør servicen i bakgrunn
+            [X] - Bruk constraints fra settings.
         [X] - Lag en preferences side med:
             [X] - Hvor mange items som skal vises i news listen (10, 20, 50, 70, 100)
             [X] - Hvor ofte nye feeds skal legges inn (10m, 60m, once a day...)
@@ -79,9 +81,51 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         */
     }
 
-    public static void startBackgroundService(Context context) {                                // Starts the background service.
+    public static void startBackgroundService(Context context) {                                // Starts the background service directly.
         Intent intent = new Intent(context, RSSPullService.class);
         context.startService(intent);
+    }
+
+    public void startPendingBackgroundService() {                                               // Starts and kills service every x minutes.
+        SharedPreferences sharedPreferences =                                                   // Connects to shared preferences.
+                getSharedPreferences(
+                        userPreferencesActivity.SHARED_PREFS_SETTINGS,
+                        Context.MODE_PRIVATE
+                );
+
+        String syncInterval =                                                                   // Gets sync interval from shared prefs.
+                sharedPreferences.getString("syncIntervalNews", "24 hours");        // Defaults to sync every 24 hours.
+
+        int mili = 86400000;        // Sets default to 24 hours.
+
+        switch (syncInterval) {
+            case "10 min":
+                mili = 600000;      // 10 minutes in milliseconds.
+                break;
+            case "30 min":
+                mili = 1800000;     // 30 minutes in milliseconds.
+                break;
+            case "1 hour":
+                mili = 3600000;     // 1 hour in milliseconds.
+                break;
+            case "5 hours":
+                mili = 18000000;    // 5 hours in milliseconds.
+                break;
+            case "12 hours":
+                mili = 43200000;    // 12 hours in milliseconds.
+                break;
+            case "24 hours":
+                mili = 86400000;    // 24 hours in milliseconds.
+                break;
+        }
+
+        Intent intent = new Intent(this, RSSPullService.class);
+        PendingIntent pIntent = PendingIntent.getService(this, 0, intent, 0);
+        AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarm.cancel(pIntent);
+
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP,                                             // Service starts every x minutes.
+                System.currentTimeMillis(), mili, pIntent);
     }
 
     public void populateNewsAdapter() {                                                         // Add news to recycle view.
@@ -131,7 +175,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {               // Listener for text changes.
             @Override
             public boolean onQueryTextSubmit(String query) {                                    // When query is submitted:
-                Toast.makeText(getBaseContext(), query, Toast.LENGTH_LONG).show();              // TEMP: toast.
+
+                // ToDo: Do something with query.
+                
+                Toast.makeText(getBaseContext(), query, Toast.LENGTH_LONG).show();
 
                 if( ! mSearchView.isIconified()) {                                              // Removes focus from search.
                     mSearchView.setIconified(true);

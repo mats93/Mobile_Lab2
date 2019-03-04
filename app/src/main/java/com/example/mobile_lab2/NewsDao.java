@@ -3,12 +3,6 @@ package com.example.mobile_lab2;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
-import android.arch.persistence.room.Update;
-import android.database.Cursor;
-
-import java.util.Date;
-
-// ToDo: Update "something" markedasread to true.
 
 @Dao
 public interface NewsDao {
