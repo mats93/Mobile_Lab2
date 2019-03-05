@@ -20,7 +20,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -58,27 +57,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         populateNewsAdapter(false, "");                                            // Populates the recycle view.
         startPendingBackgroundService();                                                        // Starts the service to fetch RSS feeds.
-
-        /* ToDo: Må gjøres:
-        [X] - Kjør servicen i bakgrunn
-            [X] - Bruk constraints fra settings.
-        [X] - Lag en preferences side med:
-            [X] - Hvor mange items som skal vises i news listen (10, 20, 50, 70, 100)
-            [X] - Hvor ofte nye feeds skal legges inn (10m, 60m, once a day...)
-            [X] - RSS feed
-        [X] - Legg til søk som skal søke etter artikkler som matcher ett sett "pattern" (regex)?
-        [ ] - Unit tests
-        */
-
-        /* ToDo: Nice to have:
-        [ ] - Chache nyheter og bilder.
-        [ ] - Slett en news fra news lsiten (skal ikke komme opp igjen ved neste fetch)
-        [ ] - Bruk API "https://cloud.feedly.com/v3/search/feeds/?query=nrk.no" for å søke etter feeds. Kan kjøre som Async.
-        [ ] - Valider RSS feeden som kommer opp, må støtet rss v.2 (eller har støtte for å parse forskjellige rss feeds)
-        [ ] - Display rss feeds på en penere måte (e.g: vg.no - toppsaker)
-        [ ] - Velg hvilke rss feeds som skal vises med en toggle i listen.
-        [ ] - Hvis antall news i title.
-        */
     }
 
     public static void startBackgroundService(Context context) {                                // Starts the background service directly.
